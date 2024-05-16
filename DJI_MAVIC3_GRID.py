@@ -82,7 +82,7 @@ speed = 2.5
 inshape = 'ROIUTM32_waypoints.shp'
 EPSG = 32632
 altref = 'WGS84' #relativeToStartPoint
-pitch = 10
+pitch = -90
 filename = '180D5472-7CD5-4DBE-96A8-F4B7B2336369'
 
 outfile = open('wpmz/waylines.wpml','w')
@@ -106,13 +106,15 @@ outfile.write('      <wpml:executeHeightMode>{}</wpml:executeHeightMode>\n'.form
 outfile.write('      <wpml:waylineId>0</wpml:waylineId>\n')
 outfile.write('      <wpml:autoFlightSpeed>{}</wpml:autoFlightSpeed>\n'.format(speed))
 
-fotonums = read_attribute(inshape,1)
-xcoords = read_attribute(inshape,2)
-ycoords = read_attribute(inshape,3)
-altasl = read_attribute(inshape,4)
+fotonums = np.array(read_attribute(inshape,1)).astype(int)
+xcoords = np.array(read_attribute(inshape,2)).astype(float)
+ycoords = np.array(read_attribute(inshape,3)).astype(float)
+altasl = np.array(read_attribute(inshape,4)).astype(float)
+grid = np.stack((fotonums,xcoords,ycoords,altasl),axis=1)
+grid = grid[np.argsort(grid[:,0])]
 for i in np.arange(len(fotonums)):
-	lon,lat,alt = TransCoordsPSToLatLon(EPSG).TransformPoint(xcoords[i],ycoords[i],altasl[i])
-	NewWaypoint(lon,lat,int(float(fotonums[i])-1),alt,speed,outfile,pitch)
+	lon,lat,alt = TransCoordsPSToLatLon(EPSG).TransformPoint(grid[i,1],grid[i,2],grid[i,3])
+	NewWaypoint(lon,lat,int(grid[i,0]-1),alt,speed,outfile,pitch)
 outfile.write('    </Folder>\n')
 outfile.write('  </Document>\n')
 outfile.write('</kml>\n')
