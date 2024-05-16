@@ -78,7 +78,7 @@ def NewWaypoint(lon,lat,no,alt,speed,outfile,pitch):
 	outfile.write('        </wpml:actionGroup>\n')
 	outfile.write('      </Placemark>\n')
 
-speed = 2.5
+speed = 5
 inshape = 'ROIUTM32_waypoints.shp'
 EPSG = 32632
 altref = 'WGS84' #relativeToStartPoint
