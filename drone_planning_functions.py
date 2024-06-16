@@ -1,10 +1,6 @@
-#!/usr/bin/env python
-
 from osgeo import ogr,osr
-import datetime
 import numpy as np
-import shutil
-import os
+
 
 def TransCoordsLatLonToPS(EPSG):
 	srs_in = osr.SpatialReference()
@@ -33,6 +29,28 @@ def read_attribute(shapefile,row):
 		attribute = feature.GetField(row)
 		attributelist.append(attribute)
 	return attributelist
+
+def write_header(speed,outfile,altref):
+    outfile.write('<?xml version="1.0" encoding="UTF-8"?>\n')
+    outfile.write('<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:wpml="http://www.dji.com/wpmz/1.0.2">\n')
+    outfile.write('  <Document>\n')
+    outfile.write('    <wpml:missionConfig>\n')
+    outfile.write('      <wpml:flyToWaylineMode>safely</wpml:flyToWaylineMode>\n')
+    outfile.write('      <wpml:finishAction>goHome</wpml:finishAction>\n')
+    outfile.write('      <wpml:exitOnRCLost>executeLostAction</wpml:exitOnRCLost>\n')
+    outfile.write('      <wpml:executeRCLostAction>goBack</wpml:executeRCLostAction>\n')
+    outfile.write('      <wpml:globalTransitionalSpeed>{}</wpml:globalTransitionalSpeed>\n'.format(speed))
+    outfile.write('      <wpml:droneInfo>\n')
+    outfile.write('        <wpml:droneEnumValue>68</wpml:droneEnumValue>\n')
+    outfile.write('        <wpml:droneSubEnumValue>0</wpml:droneSubEnumValue>\n')
+    outfile.write('      </wpml:droneInfo>\n')
+    outfile.write('    </wpml:missionConfig>\n')
+    outfile.write('    <Folder>\n')
+    outfile.write('      <wpml:templateId>0</wpml:templateId>\n')
+    outfile.write('      <wpml:executeHeightMode>{}</wpml:executeHeightMode>\n'.format(altref))
+    outfile.write('      <wpml:waylineId>0</wpml:waylineId>\n')
+    outfile.write('      <wpml:autoFlightSpeed>{}</wpml:autoFlightSpeed>\n'.format(speed))
+	
 	
 def NewWaypoint(lon,lat,no,alt,speed,outfile,pitch):
 	outfile.write('      <Placemark>\n')
@@ -77,49 +95,3 @@ def NewWaypoint(lon,lat,no,alt,speed,outfile,pitch):
 	outfile.write('          </wpml:action>\n')
 	outfile.write('        </wpml:actionGroup>\n')
 	outfile.write('      </Placemark>\n')
-
-speed = 5
-inshape = 'ROIUTM32_waypoints.shp'
-EPSG = 32632
-altref = 'WGS84' #relativeToStartPoint
-pitch = -90
-filename = '180D5472-7CD5-4DBE-96A8-F4B7B2336369'
-
-outfile = open('wpmz/waylines.wpml','w')
-outfile.write('<?xml version="1.0" encoding="UTF-8"?>\n')
-outfile.write('<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:wpml="http://www.dji.com/wpmz/1.0.2">\n')
-outfile.write('  <Document>\n')
-outfile.write('    <wpml:missionConfig>\n')
-outfile.write('      <wpml:flyToWaylineMode>safely</wpml:flyToWaylineMode>\n')
-outfile.write('      <wpml:finishAction>goHome</wpml:finishAction>\n')
-outfile.write('      <wpml:exitOnRCLost>executeLostAction</wpml:exitOnRCLost>\n')
-outfile.write('      <wpml:executeRCLostAction>goBack</wpml:executeRCLostAction>\n')
-outfile.write('      <wpml:globalTransitionalSpeed>{}</wpml:globalTransitionalSpeed>\n'.format(speed))
-outfile.write('      <wpml:droneInfo>\n')
-outfile.write('        <wpml:droneEnumValue>68</wpml:droneEnumValue>\n')
-outfile.write('        <wpml:droneSubEnumValue>0</wpml:droneSubEnumValue>\n')
-outfile.write('      </wpml:droneInfo>\n')
-outfile.write('    </wpml:missionConfig>\n')
-outfile.write('    <Folder>\n')
-outfile.write('      <wpml:templateId>0</wpml:templateId>\n')
-outfile.write('      <wpml:executeHeightMode>{}</wpml:executeHeightMode>\n'.format(altref))
-outfile.write('      <wpml:waylineId>0</wpml:waylineId>\n')
-outfile.write('      <wpml:autoFlightSpeed>{}</wpml:autoFlightSpeed>\n'.format(speed))
-
-fotonums = np.array(read_attribute(inshape,1)).astype(int)
-xcoords = np.array(read_attribute(inshape,2)).astype(float)
-ycoords = np.array(read_attribute(inshape,3)).astype(float)
-altasl = np.array(read_attribute(inshape,4)).astype(float)
-grid = np.stack((fotonums,xcoords,ycoords,altasl),axis=1)
-grid = grid[np.argsort(grid[:,0])]
-for i in np.arange(len(fotonums)):
-	lon,lat,alt = TransCoordsPSToLatLon(EPSG).TransformPoint(grid[i,1],grid[i,2],grid[i,3])
-	NewWaypoint(lon,lat,int(grid[i,0]-1),alt,speed,outfile,pitch)
-outfile.write('    </Folder>\n')
-outfile.write('  </Document>\n')
-outfile.write('</kml>\n')
-outfile.close()
-if os.path.exists(filename+'.kmz'):
-	os.system('rm '+filename+'.kmz')
-shutil.make_archive(filename, 'zip', 'wpmz')
-os.system('mv '+filename+'.zip '+filename+'.kmz')
