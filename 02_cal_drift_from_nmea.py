@@ -51,7 +51,7 @@ for line in inmea:
 		if Y == 'S':
 			DD = DD*-1
 		lat = DD
-		if lat < 55:
+		if lat < 60:
 			EPSG = 32632
 		else:			
 			EPSG = 3413
@@ -149,4 +149,5 @@ ax3.set_ylabel('z-coord (m)')
 ax3.set_xlabel('time (seconds)')
 ax3.grid('True')
 plt.tight_layout()
+plt.savefig('drift_trend.png',dpi=300)
 plt.show()

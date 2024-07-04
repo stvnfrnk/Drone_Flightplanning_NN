@@ -14,7 +14,7 @@ Steven Franke <steven.franke@awi.de>
 
 ## Generating a grid survey for your DJI Mavic 3 Drone
 
-As grid surveys for photogrammetric flights are not supported for DJI Mavic 3 Drones we show a way around how this could be accomplished anyways. For this you need the QGIS Flightplanner plugin available here <https://plugins.qgis.org/plugins/flight_planner/>, a DEM or Geoid of your survey area and a polygon shapefile of your survey area in a metric coordinate system. The scripts porvided here support UTM zone 32N and a polar stereographic coordinate system for latitudes > 60°N.
+As grid surveys for photogrammetric flights are not supported for DJI Mavic 3 Drones we show a way around how this could be accomplished anyway. For this you need the QGIS Flightplanner plugin available here <https://plugins.qgis.org/plugins/flight_planner/>, a DEM or Geoid of your survey area and a polygon shapefile of your survey area, all in a metric coordinate system. The scripts porvided here support UTM zone 32N (EPSG:32632) and a polar stereographic coordinate system for latitudes > 60°N (EPSG:3413).
 
 <p align="center">
   <img src="drift_car.jpg" width="250" title="hover text">
